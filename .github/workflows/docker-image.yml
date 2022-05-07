@@ -1,0 +1,20 @@
+name: Backend build CI/CD
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker build and push
+        uses: actions/checkout@v2
+      - run: docker login -u EJComp-Unesp -p ${{ secrets.PAT }} ghcr.io
+      - run: docker build -t ghcr.io/ejcomp-unesp/citybens-back:$GITHUB_SHA .
+      - run: docker image push ghcr.io/ejcomp-unesp/citybens-back:$GITHUB_SHA
+      - run: docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl ${{ secrets.CAPROVER_URL }} --caproverPassword ${{ secrets.CAPROVER_PASSWORD }} --caproverApp ${{ secrets.CAPROVER_APP }} --imageName ghcr.io/ejcomp-unesp/citybens-back:$GITHUB_SHA
